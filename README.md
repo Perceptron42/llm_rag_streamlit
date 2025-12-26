@@ -178,7 +178,7 @@ graph TB
         STRICT{"Strict Mode?"}
         RELEVANCE{"Relevance ><br/>Threshold?"}
         FORMAT["_format_context()<br/>Create numbered citations"]
-        LLM["OpenAI Chat<br/>gpt-4o-mini"]
+        LLM["OpenAI Chat<br/>gpt-5-nano"]
         ANSWER["Answer + Sources"]
     end
 
@@ -290,14 +290,14 @@ graph TB
 
 ### 2. Open-Source Models (Eliminate OpenAI Dependency)
 
-**Current**: Uses OpenAI API (`text-embedding-3-small`, `gpt-4o-mini`)
+**Current**: Uses OpenAI API (`text-embedding-3-small`, `gpt-5-nano`)
 
 **Open-Source Alternatives**:
 
 | Component | Current | Open-Source Alternative | Hosting Option |
 |-----------|---------|------------------------|----------------|
 | **Embeddings** | `text-embedding-3-small` | `all-MiniLM-L6-v2` (sentence-transformers)<br/>`bge-small-en-v1.5`<br/>`e5-base-v2` | AWS Bedrock (Titan Embeddings)<br/>SageMaker endpoint<br/>Local inference |
-| **Chat Model** | `gpt-4o-mini` | `Llama 3.1 8B`<br/>`Mistral 7B`<br/>`Phi-3.5 Mini` | AWS Bedrock<br/>SageMaker endpoint<br/>EC2 with vLLM |
+| **Chat Model** | `gpt-5-nano` | `Llama 3.1 8B`<br/>`Mistral 7B`<br/>`Phi-3.5 Mini` | AWS Bedrock<br/>SageMaker endpoint<br/>EC2 with vLLM |
 
 **AWS Bedrock Benefits**:
 - No infrastructure management
@@ -369,7 +369,7 @@ os.system(f"aws s3 sync s3://my-bucket/chroma_db/ {settings.persist_dir}")
 Frontend (UI)          Backend (API + Lambdas)
 ┌─────────────────┐    ┌──────────────────────┐
 │                 │    │                      │
-│  React/Next.js  │───▶│  API Gateway         │
+│  React/Next.js  │───▶│  API Gateway        │
 │  (S3 + CF)      │    │                      │
 │                 │    │  ┌────────────────┐  │
 │  - Upload docs  │    │  │ indexing-lambda│  │
