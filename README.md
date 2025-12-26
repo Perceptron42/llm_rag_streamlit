@@ -2,6 +2,25 @@
 
 A Retrieval-Augmented Generation (RAG) system built with Streamlit that enables you to ask questions about your local documents (PDFs, text files, markdown) and web URLs using OpenAI's language models.
 
+You can put all the data about your project in the `data` directory. The data directory is a subdirectory of the project root directory. 
+
+For URLs, you can add them in the sidebar. One URL per line. You can also add them in the `URLLinks.txt` file in the `data` directory. 
+
+**Models** are configurable in the `.env` file. The default models are `gpt-5-nano` for chat and `text-embedding-3-small` for embeddings. We are using `gpt-5-nano` for chat and `text-embedding-3-small` for embeddings and they have been picked for their cost-effectiveness.
+For example `gpt-5-nano` is $0.05 for 1M tokens (input) and $0.40 for 1M tokens (output)  and `text-embedding-3-small` is $0.02 for 1M tokens. 
+
+**Vector database** is configurable in the `.env` file. The default vector database is `chromadb`. ChromaDB is the "memory" that lets AI answer questions about your specific documents accurately, even when users ask in different ways. It's the bridge between your content and intelligent, conversational AI responses. In our app: Users drop documents in a folder → ChromaDB indexes them → Users can ask questions in plain English → AI finds relevant info and answers accurately with source citations. 🎯
+
+Why ChromaDB Specifically?
+- Open source - No vendor lock-in
+- Easy to use - Simple Python API
+- Runs locally - No need for cloud infrastructure (though it can scale to cloud)
+- Built for AI - Designed specifically for RAG (Retrieval-Augmented Generation) applications
+
+**Conversation memory** is configurable in the `.env` file. The default conversation memory is `true`. When enabled, the system rewrites follow-up questions into standalone queries using recent chat history (last 6 messages). For example, if you ask "What is Python?" followed by "What about its history?", the second question is automatically rewritten to "What is the history of Python?" before retrieval, ensuring accurate context-aware results without storing the entire conversation in the vector database.
+
+**Strict mode** is configurable in the `.env` file. The default strict mode is `true`. When enabled, the system refuses to answer if the relevance is too low (prevents hallucinations).
+
 ## ✨ Features
 
 - 📄 **Multi-format document support**: PDF, TXT, and MD files
@@ -127,6 +146,71 @@ llmrag_experimients/
 - **[Trafilatura](https://trafilatura.readthedocs.io/)**: Web scraping
 
 ## 📝 How It Works
+
+### Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "User Interface (Streamlit)"
+        UI[User Interface]
+        SIDEBAR[Sidebar Controls]
+        CHAT[Chat Interface]
+    end
+
+    subgraph "Indexing Pipeline"
+        DATA[("Data Sources<br/>PDFs, TXT, MD, URLs")]
+        DISCOVER["discover_files()<br/>Find all documents"]
+        LOAD["Loaders<br/>load_pdf_documents()<br/>load_text_file()<br/>load_url_document()"]
+        SPLIT["split_documents()<br/>Chunk into ~900 chars<br/>with 150 overlap"]
+        HASH["Add chunk_hash<br/>SHA-256 for dedup"]
+        EMBED["OpenAI Embeddings<br/>text-embedding-3-small"]
+        CHROMA[("ChromaDB<br/>Vector Database<br/>./chroma_db")]
+    end
+
+    subgraph "Question Answering Pipeline"
+        QUESTION["User Question"]
+        MEMORY{"Conversation<br/>Memory?"}
+        REWRITE["rewrite_question()<br/>Make standalone"]
+        SEARCH["Vector Search<br/>similarity_search_with_score()"]
+        STRICT{"Strict Mode?"}
+        RELEVANCE{"Relevance ><br/>Threshold?"}
+        FORMAT["_format_context()<br/>Create numbered citations"]
+        LLM["OpenAI Chat<br/>gpt-4o-mini"]
+        ANSWER["Answer + Sources"]
+    end
+
+    %% Indexing Flow
+    UI --> |Build Index| DATA
+    DATA --> DISCOVER
+    DISCOVER --> LOAD
+    LOAD --> SPLIT
+    SPLIT --> HASH
+    HASH --> EMBED
+    EMBED --> CHROMA
+
+    %% Question Flow
+    CHAT --> QUESTION
+    QUESTION --> MEMORY
+    MEMORY --> |Yes| REWRITE
+    MEMORY --> |No| SEARCH
+    REWRITE --> SEARCH
+    SEARCH --> |Top-k chunks| STRICT
+    STRICT --> |Yes| RELEVANCE
+    STRICT --> |No| FORMAT
+    RELEVANCE --> |Pass| FORMAT
+    RELEVANCE --> |Fail| ANSWER
+    FORMAT --> LLM
+    LLM --> ANSWER
+    ANSWER --> CHAT
+
+    %% Database connections
+    CHROMA -.-> |Read vectors| SEARCH
+
+    style CHROMA fill:#e1f5ff,stroke:#01579b,stroke-width:3px
+    style LLM fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style EMBED fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style ANSWER fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+```
 
 ### Indexing Pipeline
 

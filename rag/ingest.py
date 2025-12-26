@@ -23,10 +23,40 @@ from rag.loaders import (
 
 
 def _content_hash(text: str) -> str:
+    """
+    Generates a SHA-256 hash of text content for deduplication.
+    
+    Used to create unique identifiers for document chunks to prevent
+    duplicate content from being indexed multiple times.
+    
+    Args:
+        text: Text content to hash
+    
+    Returns:
+        str: 64-character hexadecimal SHA-256 hash
+    """
     return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
 
 
 def split_documents(docs: List[Document]) -> List[Document]:
+    """
+    Splits documents into smaller chunks with overlap for better retrieval.
+    
+    Uses RecursiveCharacterTextSplitter to intelligently split at paragraph,
+    line, and word boundaries. Adds a unique hash to each chunk's metadata
+    for deduplication.
+    
+    Args:
+        docs: List of Document objects to split
+    
+    Returns:
+        List[Document]: Chunked documents with 'chunk_hash' metadata added
+    
+    Chunking strategy:
+        - chunk_size: ~900 characters per chunk (configurable)
+        - chunk_overlap: ~150 characters overlap between chunks
+        - Separators: paragraph (\n\n) > line (\n) > space > character
+    """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.chunk_size,
         chunk_overlap=settings.chunk_overlap,
@@ -39,6 +69,23 @@ def split_documents(docs: List[Document]) -> List[Document]:
 
 
 def get_vectorstore() -> Chroma:
+    """
+    Initializes and returns the ChromaDB vector store.
+    
+    Creates a persistent vector database using OpenAI embeddings.
+    The database is stored on disk and survives app restarts.
+    
+    Returns:
+        Chroma: Initialized vector store instance
+    
+    Raises:
+        RuntimeError: If OPENAI_API_KEY is not set in environment
+    
+    Configuration:
+        - Collection name: from settings.collection_name (default: 'rag_toy')
+        - Embedding model: from settings.embedding_model (default: 'text-embedding-3-small')
+        - Persist directory: from settings.persist_dir (default: './chroma_db')
+    """
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY missing. Put it in .env")
 

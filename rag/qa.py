@@ -20,10 +20,10 @@ Rules:
 
 @dataclass
 class SourceHit:
-    source: str
-    page: int | None
-    snippet: str
-    score: float
+    source: str # Filename/URL
+    page: int | None # Page number (None for non-PDFs)
+    snippet: str  # First 280 chars of the chunk
+    score: float  # Relevance score
 
 def rewrite_question_with_context(question: str, chat_history: list[dict]) -> str:
     """
@@ -54,8 +54,30 @@ def rewrite_question_with_context(question: str, chat_history: list[dict]) -> st
     resp = llm.invoke(prompt)
     return (resp.content or "").strip() or question
 
-
 def _format_context(docs: List[Document]) -> str:
+    """
+    Formats retrieved documents into numbered blocks for the LLM.
+    
+    Each document chunk is formatted with:
+    - A numbered citation [1], [2], etc.
+    - Source filename/URL and page number (if applicable)
+    - The full document content
+    
+    Args:
+        docs: List of Document objects from vector search
+    
+    Returns:
+        str: Formatted context string with numbered citations separated by '---'
+    
+    Example output:
+        [1] SOURCE: python_guide.pdf, page 5
+        Python was created by Guido van Rossum in 1991...
+        
+        ---
+        
+        [2] SOURCE: programming_basics.txt
+        Python is a high-level language known for readability...
+    """
     blocks = []
     for i, d in enumerate(docs, start=1):
         src = d.metadata.get("source", "unknown")
@@ -64,8 +86,25 @@ def _format_context(docs: List[Document]) -> str:
         blocks.append(f"[{i}] SOURCE: {src}{page_str}\n{d.page_content}")
     return "\n\n---\n\n".join(blocks)
 
-
 def _make_sources(docs_with_scores: List[Tuple[Document, float]]) -> List[SourceHit]:
+    """
+    Converts retrieved documents into SourceHit objects with metadata.
+    
+    Extracts source information from vector search results and creates
+    structured objects for UI display. Page numbers are converted from
+    0-indexed to 1-indexed for human readability.
+    
+    Args:
+        docs_with_scores: List of tuples containing (Document, distance_score)
+                         where lower scores mean higher similarity
+    
+    Returns:
+        List[SourceHit]: List of SourceHit objects containing:
+            - source: filename or URL
+            - page: 1-indexed page number (None for non-PDFs)
+            - snippet: first 280 characters with '…' if truncated
+            - score: distance score from vector search
+    """
     hits: List[SourceHit] = []
     for d, score in docs_with_scores:
         src = d.metadata.get("source", "unknown")
@@ -77,11 +116,11 @@ def _make_sources(docs_with_scores: List[Tuple[Document, float]]) -> List[Source
 
 def ask_question(
     question: str,
-    strict: bool = True,
-    min_relevance: float = 0.35,
-    k: int = 6,
-    use_conversation_memory: bool = False,
-    chat_history: list[dict] | None = None,
+    strict: bool = True, # strict: Refuse to answer if relevance is too low
+    min_relevance: float = 0.35, # min_relevance: Threshold for strict mode (0.0 - 0.9)
+    k: int = 6, # k: Number of document chunks to retrieve (2-12)
+    use_conversation_memory: bool = False, # use_conversation_memory: Enable follow-up questions with context
+    chat_history: list[dict] | None = None, # chat_history: List of chat messages for conversation memory
 ) -> Dict[str, Any]:
     """
     strict + min_relevance:
@@ -101,7 +140,7 @@ def ask_question(
     vs: Chroma = get_vectorstore()
 
     # Retrieve with scores (distance)
-    docs_with_scores = vs.similarity_search_with_score(question, k=k)
+    docs_with_scores = vs.similarity_search_with_score(retrieval_question, k=k)
 
     # Convert distance to "relevance-ish"
     # (This is heuristic; good enough for toy project.)

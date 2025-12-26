@@ -72,10 +72,12 @@ with colB:
 
     q = st.chat_input("Ask a question about your local docs...")
     if q:
+        # Capture history BEFORE adding current question
+        history_before_current = st.session_state.messages.copy()
+        
         st.session_state.messages.append({"role": "user", "content": q})
         with st.chat_message("user"):
             st.markdown(q)
-
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 result = ask_question(
@@ -84,16 +86,13 @@ with colB:
                     min_relevance=min_rel,
                     k=k,
                     use_conversation_memory=use_memory,
-                    chat_history=st.session_state.messages,
+                    chat_history=history_before_current,  # ✅ Excludes current question
                 )
-
             st.markdown(result["answer"])
-
             if result.get("sources"):
                 with st.expander("Sources"):
                     for i, s in enumerate(result["sources"], start=1):
                         page_str = f" (page {s.page})" if s.page else ""
                         st.markdown(f"**{i}. {s.source}{page_str}**  \nscore: `{s.score:.4f}`")
                         st.caption(s.snippet)
-
         st.session_state.messages.append({"role": "assistant", "content": result["answer"]})
