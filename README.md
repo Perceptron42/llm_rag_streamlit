@@ -131,7 +131,7 @@ llmrag_experimients/
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OPENAI_API_KEY` | *(required)* | Your OpenAI API key |
-| `OPENAI_MODEL` | `gpt-4o-mini` | Chat model for answers |
+| `OPENAI_MODEL` | `gpt-5-nano` | Chat model for answers |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model |
 | `CHROMA_DIR` | `./chroma_db` | Vector database directory |
 | `CHROMA_COLLECTION` | `rag_toy` | Collection name |
