@@ -19,10 +19,9 @@ You can put all the data about your project in the `data` directory. The data di
 
 For URLs, you can add them in the sidebar. One URL per line. You can also add them in the `URLLinks.txt` file in the `data` directory. 
 
-**Models** are configurable in the `.env` file. The default models are `gpt-5-nano` for chat and `text-embedding-3-small` for embeddings. We are using `gpt-5-nano` for chat and `text-embedding-3-small` for embeddings and they have been picked for their cost-effectiveness.
-For example `gpt-5-nano` is $0.05 for 1M tokens (input) and $0.40 for 1M tokens (output)  and `text-embedding-3-small` is $0.02 for 1M tokens. 
+**Models** are configurable in the `.env` file. The default models are `gpt-5-nano` for chat and `text-embedding-3-small` for embeddings from OpenAI. They have been picked for their cost-effectiveness. For example `gpt-5-nano` is $0.05 for 1M tokens (input) and $0.40 for 1M tokens (output)  and `text-embedding-3-small` is $0.02 for 1M tokens. 
 
-**Vector database** is configurable in the `.env` file. The default vector database is `chromadb`. ChromaDB is the "memory" that lets AI answer questions about your specific documents accurately, even when users ask in different ways. It's the bridge between your content and intelligent, conversational AI responses. In our app: Users drop documents in a folder → ChromaDB indexes them → Users can ask questions in plain English → AI finds relevant info and answers accurately with source citations. 🎯
+**Vector database** is `chromadb`. ChromaDB is the "memory" that lets AI answer questions about your specific documents accurately, even when users ask in different ways. It's the bridge between your content and intelligent, conversational AI responses. In our app: Users drop documents in a folder → ChromaDB indexes them → Users can ask questions in plain English → AI finds relevant info and answers accurately with source citations. 🎯
 
 **Why ChromaDB Specifically?**
 - Open source - No vendor lock-in
@@ -30,9 +29,9 @@ For example `gpt-5-nano` is $0.05 for 1M tokens (input) and $0.40 for 1M tokens 
 - Runs locally - No need for cloud infrastructure (though it can scale to cloud)
 - Built for AI - Designed specifically for RAG (Retrieval-Augmented Generation) applications
 
-**Conversation memory** is configurable in the `.env` file. The default conversation memory is `true`. When enabled, the system rewrites follow-up questions into standalone queries using recent chat history (last 6 messages). For example, if you ask "What is Python?" followed by "What about its history?", the second question is automatically rewritten to "What is the history of Python?" before retrieval, ensuring accurate context-aware results without storing the entire conversation in the vector database.
+**Conversation memory** is `true`. When enabled, the system rewrites follow-up questions into standalone queries using recent chat history (last 6 messages). For example, if you ask "What is Python?" followed by "What about its history?", the second question is automatically rewritten to "What is the history of Python?" before retrieval, ensuring accurate context-aware results without storing the entire conversation in the vector database.
 
-**Strict mode** is configurable in the `.env` file. The default strict mode is `true`. When enabled, the system refuses to answer if the relevance is too low (prevents hallucinations).
+**Strict mode** is `true`. When enabled, the system refuses to answer if the relevance is too low (prevents hallucinations).
 
 ## 🚀 Quick Start
 
@@ -66,7 +65,7 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 ```env
 OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5-nano
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 CHROMA_DIR=./chroma_db
 CHROMA_COLLECTION=rag_toy
