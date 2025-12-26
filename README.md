@@ -33,6 +33,13 @@ For URLs, you can add them in the sidebar. One URL per line. You can also add th
 
 **Strict mode** is `true`. When enabled, the system refuses to answer if the relevance is too low (prevents hallucinations).
 
+**Content Hashing** is enabled by default. The system hashes the content of the documents to prevent duplicates.
+- Content hashing = Creating a unique fingerprint (ID) from text content
+- SHA-256 = The algorithm used (64-character hex string)
+- Purpose = Prevent duplicate chunks across files and re-indexing runs
+- How = Hash used as ChromaDB document ID → duplicates get merged automatically
+- Benefit = Saves storage space, reduces embedding costs, faster searches 🚀
+
 ## 🚀 Quick Start
 
 ### Prerequisites
