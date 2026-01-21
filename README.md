@@ -13,6 +13,11 @@ A Retrieval-Augmented Generation (RAG) system built with Streamlit that enables 
 - 💾 **Persistent vector database**: Index survives app restarts with ChromaDB
 - 🔄 **Deduplication**: Hash-based chunk deduplication across re-indexing
 
+## 🎥 Demo
+
+<video src="video/Rag_Example_with_Live_Scraping.mp4" controls="controls" style="max-width: 100%;">
+</video>
+
 ## Suggestions
 
 You can put all the data about your project in the `data` directory. The data directory is a subdirectory of the project root directory. 
