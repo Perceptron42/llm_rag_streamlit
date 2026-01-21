@@ -15,8 +15,11 @@ A Retrieval-Augmented Generation (RAG) system built with Streamlit that enables 
 
 ## 🎥 Demo
 
-<video src="video/Rag_Example_with_Live_Scraping.mp4" controls="controls" style="max-width: 100%;">
-</video>
+<a href="video/Rag_Example_with_Live_Scraping.mp4">
+  <img src="video/llmrag_demo.gif" alt="Demo Animation" style="max-width: 100%;">
+</a>
+
+_(Click the animation above to watch the full video)_
 
 ## Suggestions
 
